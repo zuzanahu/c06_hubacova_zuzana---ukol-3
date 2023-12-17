@@ -6,26 +6,30 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.Serial;
+import java.util.List;
 
 public class App {
     private JPanel panel;
+    private SelectedObject3D selectedObject;
     private final Raster raster;
     private final LineRasterizer lineRasterizer;
     private final VisualizationPipeline pipeline;
     private Scene scene;
+    private Timer timer;
     private Point2D mousePosition;
     private double screenRation;
     private boolean isOrthoProjection;
     private final int BLACK = 0x00000000;
     private boolean isEditModeOn = false;
-    FergusonCubic fergusonCubic;
-    BezierCubic bezierCubic;
-    CoonsCubic coonsCubic;
+    private FergusonCubic fergusonCubic;
+    private BezierCubic bezierCubic;
+    private CoonsCubic coonsCubic;
 
-    Cuboid cuboid;
-    Cube cube;
-    Tetrahedron tetrahedron;
-    Camera camera;
+    private Cuboid cuboid;
+    private Cube cube;
+    private Tetrahedron tetrahedron;
+    private Camera camera;
+    boolean animateToggle = true;
 
     public App(int width, int height) {
         raster = new Raster(width, height);
@@ -101,7 +105,7 @@ public class App {
         frame.add(panel, BorderLayout.CENTER);
 
         // Create selected object
-        SelectedObject3D selectedObject = new SelectedObject3D();
+        selectedObject = new SelectedObject3D();
         // Create buttons
         JButton orthoProjectionBtn = new JButton("TURN ORTHOGONAL projection ON");
         JButton editModeBtn = new JButton("TURN EDIT mode ON");
@@ -182,17 +186,17 @@ public class App {
                 updateCanvas();
             }
         });
-        selectCubeBtn.addActionListener(e -> selectedObject.setSelectedObject(cube));
+        selectCubeBtn.addActionListener(e -> {selectedObject.setSelectedObject(cube);panel.requestFocusInWindow();});
 
-        selectCuboidBtn.addActionListener(e -> selectedObject.setSelectedObject(cuboid)
+        selectCuboidBtn.addActionListener(e -> {selectedObject.setSelectedObject(cuboid);panel.requestFocusInWindow();}
         );
-        selectTetrahedronBtn.addActionListener(e -> selectedObject.setSelectedObject(tetrahedron)
+        selectTetrahedronBtn.addActionListener(e -> {selectedObject.setSelectedObject(tetrahedron);panel.requestFocusInWindow();}
         );
-        selectFergusonBtn.addActionListener(e -> selectedObject.setSelectedObject(fergusonCubic)
+        selectFergusonBtn.addActionListener(e -> {selectedObject.setSelectedObject(fergusonCubic);panel.requestFocusInWindow();}
         );
-        selectBezierBtn.addActionListener(e -> selectedObject.setSelectedObject(bezierCubic)
+        selectBezierBtn.addActionListener(e -> {selectedObject.setSelectedObject(bezierCubic);panel.requestFocusInWindow();}
         );
-        selectCoonsBtn.addActionListener(e -> selectedObject.setSelectedObject(coonsCubic)
+        selectCoonsBtn.addActionListener(e -> {selectedObject.setSelectedObject(coonsCubic);panel.requestFocusInWindow();}
         );
         moveInDirectionXBtn.addActionListener(e -> {
             selectedObject.getObject3D().moveInDirectionX();
@@ -286,6 +290,13 @@ public class App {
                             if (e.getKeyCode() == KeyEvent.VK_D) {
                                 camera = camera.right(speed);
                             }
+                            if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
+                                animateToggle = false;
+                            }
+                            if (e.getKeyCode() == KeyEvent.VK_SPACE) {
+                                animateToggle = true;
+                                startTimer();
+                            }
                             updateCanvas();
                     }
             }) ;
@@ -321,8 +332,19 @@ public class App {
         panel.repaint();
 
     }
+    private void startTimer() {
+        timer = new Timer(10, e -> {
+            updateCanvas();
+            if (animateToggle) {
+                    selectedObject.getObject3D().rotateAroundAxisX();
+                    updateCanvas();
+            }
+        });
+        timer.start();
+    }
+
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> new App(1000, 800).updateCanvas());
+        SwingUtilities.invokeLater(() -> new App(1000, 800).startTimer());
     }
 
 }
