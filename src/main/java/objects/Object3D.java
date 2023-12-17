@@ -1,8 +1,6 @@
 package objects;
 
-import transforms.Mat4;
-import transforms.Mat4Identity;
-import transforms.Point3D;
+import transforms.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -10,8 +8,8 @@ import java.util.List;
 import java.util.Map;
 
 public abstract class Object3D {
-    private  List<Point3D> vertexBuffer;
-    private  List<Integer> indexBuffer;
+    private final List<Point3D> vertexBuffer;
+    private final List<Integer> indexBuffer;
     public enum Colors {
         PINK,
         LIGHT_BLUE,
@@ -23,7 +21,7 @@ public abstract class Object3D {
         BLUE,
         PURPLE
     };
-    private HashMap<Colors, Integer> colorsToValues = new HashMap<Colors, Integer>(
+    private final HashMap<Colors, Integer> colorsToValues = new HashMap<Colors, Integer>(
             Map.of(
                 Colors.PINK, 0xFFFF69B4,
                 Colors.LIGHT_BLUE, 0xFFADD8E6,
@@ -93,4 +91,84 @@ public abstract class Object3D {
     public void setColor(Colors color) {
         this.color = colorsToValues.get(color);
     }
+
+    // methods for transforming the object
+
+    /**
+     * Translates the object to the X direction.
+     */
+    public void moveInDirectionX() {
+        this.setModelMatrix(this.getModelMatrix().mul(new Mat4Transl(0.5,0, 0)));
+    }
+    /**
+     * Translates the object to the Y direction.
+     */
+    public void moveInDirectionY() {
+        this.setModelMatrix(this.getModelMatrix().mul(new Mat4Transl(0,0.5, 0)));
+    }
+    /**
+     * Translates the object to the Z direction.
+     */
+    public void moveInDirectionZ() {
+        this.setModelMatrix(this.getModelMatrix().mul(new Mat4Transl(0,0, 0.5)));
+    }
+
+    /**
+     * Rotates the object around axis X.
+     */
+    public void rotateAroundAxisX() {
+            // save the object's translation vector for translation to the coordinate system's beginning and back to the object's original position
+            Vec3D translationVector = this.getModelMatrix().getTranslate();
+            // translate the object to the beginning
+            Mat4 translationToTheBeginning = new Mat4Transl(translationVector.opposite());
+            Mat4 modelMatrixInTheBeginning = this.getModelMatrix().mul(translationToTheBeginning);
+            // rotate the object in the beginning
+            Mat4 rotationInTheBeginning = modelMatrixInTheBeginning.mul(new Mat4RotX(Math.PI/4));
+            // now get back to the object's original position and update the object's model matrix
+            this.setModelMatrix(rotationInTheBeginning.mul(new Mat4Transl(translationVector)));
+    }
+
+    /**
+     * Rotates the object around axis Y.
+     */
+    public void rotateAroundAxisY() {
+            // save the object's translation vector for translation to the coordinate system's beginning and back to the object's original position
+            Vec3D translationVector = this.getModelMatrix().getTranslate();
+            // translate the object to the beginning
+            Mat4 translationToTheBeginning = new Mat4Transl(translationVector.opposite());
+            Mat4 modelMatrixInTheBeginning = this.getModelMatrix().mul(translationToTheBeginning);
+            // rotate the object in the beginning
+            Mat4 rotationInTheBeginning = modelMatrixInTheBeginning.mul(new Mat4RotY(Math.PI/4));
+            // now get back to the object's original position and update the object's model matrix
+            this.setModelMatrix(rotationInTheBeginning.mul(new Mat4Transl(translationVector)));
+    }
+
+    /**
+     * Rotates the object around axis Z.
+     */
+    public void rotateAroundAxisZ() {
+            // save the object's translation vector for translation to the coordinate system's beginning and back to the object's original position
+            Vec3D translationVector = this.getModelMatrix().getTranslate();
+            // translate the object to the beginning
+            Mat4 translationToTheBeginning = new Mat4Transl(translationVector.opposite());
+            Mat4 modelMatrixInTheBeginning = this.getModelMatrix().mul(translationToTheBeginning);
+            // rotate the object in the beginning
+            Mat4 rotationInTheBeginning = modelMatrixInTheBeginning.mul(new Mat4RotZ(Math.PI/4));
+            // now get back to the object's original position and update the object's model matrix
+            this.setModelMatrix(rotationInTheBeginning.mul(new Mat4Transl(translationVector)));
+    }
+
+    /**
+     * Makes the object bigger (zoom/scale).
+     */
+    public void makeBigger() {
+        this.setModelMatrix(this.getModelMatrix().mul(new Mat4Scale(2,2, 2)));
+    }
+    /**
+     * Makes the object smaller (zoom/scale).
+     */
+    public void makeSmaller() {
+        this.setModelMatrix(this.getModelMatrix().mul(new Mat4Scale(0.5,0.5, 0.5)));
+    }
+
 }

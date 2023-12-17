@@ -23,6 +23,6 @@ public class Cuboid extends Object3D {
                 Colors.YELLOW
         );
         //transformations
-        this.setModelMatrix(this.getModelMatrix().mul(new Mat4Transl(3, 0, 0)).mul(new Mat4RotY(Math.PI / 150)));
+        this.setModelMatrix(this.getModelMatrix().mul(new Mat4Transl(3, 0, 0)).mul(new Mat4RotY(Math.PI/3)));
     };
 }

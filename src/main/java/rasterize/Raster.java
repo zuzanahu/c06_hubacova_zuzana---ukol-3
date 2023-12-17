@@ -35,6 +35,11 @@ public class Raster {
         return false;
     }
 
+    public void setColor(int color) {
+        Graphics gr = img.getGraphics();
+        gr.setColor(new Color(color));
+    }
+
     public void clear(int backgroundColor) {
         Graphics gr = img.getGraphics();
         try {
@@ -48,5 +53,9 @@ public class Raster {
 
     public void present(Graphics g) {
         g.drawImage(img, 0, 0, null);
+    }
+
+    public void drawString(String text, double x, double y, Graphics g) {
+        g.drawString(text,(int) x, (int) y);
     }
 }
