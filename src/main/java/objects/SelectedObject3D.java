@@ -1,5 +1,8 @@
 package objects;
 
+/**
+ * Object that is currently selected in the EDIT mode.
+ */
 public class SelectedObject3D {
     private Object3D object3D;
 

@@ -5,9 +5,7 @@ import transforms.*;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
-import java.awt.image.ImageObserver;
 import java.io.Serial;
-import java.text.AttributedCharacterIterator;
 
 public class App {
     private JPanel panel;
@@ -19,7 +17,10 @@ public class App {
     private double screenRation;
     private boolean isOrthoProjection;
     private final int BLACK = 0x00000000;
-    private boolean isSelectionMode = false;
+    private boolean isEditModeOn = false;
+    FergusonCubic fergusonCubic;
+    BezierCubic bezierCubic;
+    CoonsCubic coonsCubic;
 
     Cuboid cuboid;
     Cube cube;
@@ -39,16 +40,23 @@ public class App {
         screenRation = (double)raster.getHeight()/raster.getWidth();
         scene = new Scene();
 
+        // init scene objects
         cuboid = new Cuboid();
         cube = new Cube();
         tetrahedron = new Tetrahedron();
         Axes axes = new Axes();
+        fergusonCubic = new FergusonCubic();
+        bezierCubic = new BezierCubic();
+        coonsCubic = new CoonsCubic();
 
+        // add objects to the scene
         scene.addObject3D(cuboid);
         scene.addObject3D(tetrahedron);
         scene.addObject3D(axes);
         scene.addObject3D(cube);
-
+        scene.addObject3D(fergusonCubic);
+        scene.addObject3D(bezierCubic);
+        scene.addObject3D(coonsCubic);
         isOrthoProjection = false;
     }
 
@@ -91,16 +99,18 @@ public class App {
             }
         };
         frame.add(panel, BorderLayout.CENTER);
-        // write text onto the raster
 
         // Create selected object
         SelectedObject3D selectedObject = new SelectedObject3D();
         // Create buttons
         JButton orthoProjectionBtn = new JButton("TURN ORTHOGONAL projection ON");
-        JButton selectionModeBtn = new JButton("TURN SELECTION mode ON");
+        JButton editModeBtn = new JButton("TURN EDIT mode ON");
         JButton selectCubeBtn = new JButton("Select cube");
         JButton selectCuboidBtn = new JButton("Select cuboid");
         JButton selectTetrahedronBtn = new JButton("Select tetrahedron");
+        JButton selectFergusonBtn = new JButton("Select ferguson");
+        JButton selectBezierBtn = new JButton("Select bezier");
+        JButton selectCoonsBtn = new JButton("Select coons");
         JButton moveInDirectionXBtn = new JButton("Move in direction X");
         JButton moveInDirectionYBtn = new JButton("Move in direction Y");
         JButton moveInDirectionZBtn = new JButton("Move in direction Z");
@@ -112,140 +122,109 @@ public class App {
 
         // Add buttons to the panel
         panel.add(orthoProjectionBtn);
-        panel.add(selectionModeBtn);
+        panel.add(editModeBtn);
 
         // Attach ActionListeners to buttons
-        orthoProjectionBtn.addActionListener(new ActionListener() {
-          @Override
-          public void actionPerformed(ActionEvent e) {
-              if (!isOrthoProjection) {
-                  isOrthoProjection = true;
-                  orthoProjectionBtn.setText("TURN PERSPECTIVE projection ON");
-                  updateCanvas();
-              } else {
-                  isOrthoProjection = false;
-                  orthoProjectionBtn.setText("TURN ORTHOGONAL projection ON");
-                  updateCanvas();
-              }
-          }
-        });
-        selectionModeBtn.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                if (!isSelectionMode) {
-                    isSelectionMode = true;
-                    selectionModeBtn.setText("TURN SELECTION mode OFF");
-
-                    // Add buttons to the panel
-                    panel.add(selectCubeBtn);
-                    panel.add(selectCuboidBtn);
-                    panel.add(selectTetrahedronBtn);
-                    panel.add(moveInDirectionXBtn);
-                    panel.add(moveInDirectionYBtn);
-                    panel.add(moveInDirectionZBtn);
-                    panel.add(rotateAroundAxisXBtn);
-                    panel.add(rotateAroundAxisYBtn);
-                    panel.add(rotateAroundAxisZBtn);
-                    panel.add(makeBiggerBtn);
-                    panel.add(makeSmallerBtn);
-                    updateCanvas();
-                } else {
-                    isSelectionMode = false;
-                    selectionModeBtn.setText("TURN SELECTION mode ON");
-
-                    // Add buttons to the panel
-                    panel.remove(selectCubeBtn);
-                    panel.remove(selectCuboidBtn);
-                    panel.remove(selectTetrahedronBtn);
-                    panel.remove(moveInDirectionXBtn);
-                    panel.remove(moveInDirectionYBtn);
-                    panel.remove(moveInDirectionZBtn);
-                    panel.remove(rotateAroundAxisXBtn);
-                    panel.remove(rotateAroundAxisYBtn);
-                    panel.remove(rotateAroundAxisZBtn);
-                    panel.remove(makeBiggerBtn);
-                    panel.remove(makeSmallerBtn);
-                    updateCanvas();
-                }
+        orthoProjectionBtn.addActionListener(e -> {
+            if (!isOrthoProjection) {
+                isOrthoProjection = true;
+                orthoProjectionBtn.setText("TURN PERSPECTIVE projection ON");
+                panel.requestFocusInWindow();
+                updateCanvas();
+            } else {
+                isOrthoProjection = false;
+                orthoProjectionBtn.setText("TURN ORTHOGONAL projection ON");
+                panel.requestFocusInWindow();
+                updateCanvas();
             }
         });
-        selectCubeBtn.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                selectedObject.setSelectedObject(cube);
+        editModeBtn.addActionListener(e -> {
+            if (!isEditModeOn) {
+                isEditModeOn = true;
+                editModeBtn.setText("TURN EDIT mode OFF");
+
+                // Add buttons to the panel
+                panel.add(selectCubeBtn);
+                panel.add(selectCuboidBtn);
+                panel.add(selectTetrahedronBtn);
+                panel.add(selectFergusonBtn);
+                panel.add(selectBezierBtn);
+                panel.add(selectCoonsBtn);
+                panel.add(moveInDirectionXBtn);
+                panel.add(moveInDirectionYBtn);
+                panel.add(moveInDirectionZBtn);
+                panel.add(rotateAroundAxisXBtn);
+                panel.add(rotateAroundAxisYBtn);
+                panel.add(rotateAroundAxisZBtn);
+                panel.add(makeBiggerBtn);
+                panel.add(makeSmallerBtn);
+                updateCanvas();
+            } else {
+                isEditModeOn = false;
+                editModeBtn.setText("TURN EDIT mode ON");
+
+                // Add buttons to the panel
+                panel.remove(selectCubeBtn);
+                panel.remove(selectCuboidBtn);
+                panel.remove(selectTetrahedronBtn);
+                panel.remove(selectFergusonBtn);
+                panel.remove(selectBezierBtn);
+                panel.remove(selectCoonsBtn);
+                panel.remove(moveInDirectionXBtn);
+                panel.remove(moveInDirectionYBtn);
+                panel.remove(moveInDirectionZBtn);
+                panel.remove(rotateAroundAxisXBtn);
+                panel.remove(rotateAroundAxisYBtn);
+                panel.remove(rotateAroundAxisZBtn);
+                panel.remove(makeBiggerBtn);
+                panel.remove(makeSmallerBtn);
+                panel.requestFocusInWindow();
+                updateCanvas();
             }
         });
+        selectCubeBtn.addActionListener(e -> selectedObject.setSelectedObject(cube));
 
-        selectCuboidBtn.addActionListener(new ActionListener() {
-              @Override
-              public void actionPerformed(ActionEvent e) {
-                  selectedObject.setSelectedObject(cuboid);
-              }
-          }
+        selectCuboidBtn.addActionListener(e -> selectedObject.setSelectedObject(cuboid)
         );
-        selectTetrahedronBtn.addActionListener(new ActionListener() {
-              @Override
-              public void actionPerformed(ActionEvent e) {
-                  selectedObject.setSelectedObject(tetrahedron);
-              }
-          }
+        selectTetrahedronBtn.addActionListener(e -> selectedObject.setSelectedObject(tetrahedron)
         );
-
-        moveInDirectionXBtn.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                selectedObject.getObject3D().moveInDirectionX();
-                updateCanvas();
-            }
+        selectFergusonBtn.addActionListener(e -> selectedObject.setSelectedObject(fergusonCubic)
+        );
+        selectBezierBtn.addActionListener(e -> selectedObject.setSelectedObject(bezierCubic)
+        );
+        selectCoonsBtn.addActionListener(e -> selectedObject.setSelectedObject(coonsCubic)
+        );
+        moveInDirectionXBtn.addActionListener(e -> {
+            selectedObject.getObject3D().moveInDirectionX();
+            updateCanvas();
         });
-        moveInDirectionYBtn.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                selectedObject.getObject3D().moveInDirectionY();
-                updateCanvas();
-            }
+        moveInDirectionYBtn.addActionListener(e -> {
+            selectedObject.getObject3D().moveInDirectionY();
+            updateCanvas();
         });
-        moveInDirectionZBtn.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                selectedObject.getObject3D().moveInDirectionZ();
-                updateCanvas();
-            }
+        moveInDirectionZBtn.addActionListener(e -> {
+            selectedObject.getObject3D().moveInDirectionZ();
+            updateCanvas();
         });
-        rotateAroundAxisXBtn.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                selectedObject.getObject3D().rotateAroundAxisX();
-                updateCanvas();
-            }
+        rotateAroundAxisXBtn.addActionListener(e -> {
+            selectedObject.getObject3D().rotateAroundAxisX();
+            updateCanvas();
         });
-        rotateAroundAxisYBtn.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                selectedObject.getObject3D().rotateAroundAxisY();
-                updateCanvas();
-            }
+        rotateAroundAxisYBtn.addActionListener(e -> {
+            selectedObject.getObject3D().rotateAroundAxisY();
+            updateCanvas();
         });
-        rotateAroundAxisZBtn.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                selectedObject.getObject3D().rotateAroundAxisZ();
-                updateCanvas();
-            }
+        rotateAroundAxisZBtn.addActionListener(e -> {
+            selectedObject.getObject3D().rotateAroundAxisZ();
+            updateCanvas();
         });
-        makeBiggerBtn.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                selectedObject.getObject3D().makeBigger();
-                updateCanvas();
-            }
+        makeBiggerBtn.addActionListener(e -> {
+            selectedObject.getObject3D().makeBigger();
+            updateCanvas();
         });
-        makeSmallerBtn.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                selectedObject.getObject3D().makeSmaller();
-                updateCanvas();
-            }
+        makeSmallerBtn.addActionListener(e -> {
+            selectedObject.getObject3D().makeSmaller();
+            updateCanvas();
         });
         // Add the panel to the frame
         frame.getContentPane().add(panel);
@@ -263,10 +242,13 @@ public class App {
      * @param panel component that contains buttons, text fields, etc. that generate events when interacted with.
      */
     private void initListeners(JPanel panel) {
+            /*
+             * For changing the azimuth and zenith of the Camera object
+             */
             panel.addMouseMotionListener(new MouseAdapter() {
                 @Override
                 public void mouseMoved(MouseEvent e) {
-                    if (!isSelectionMode) {
+                    if (!isEditModeOn) {
                         if (e.getY() < mousePosition.getY()) {
                             camera = camera.addZenith(Math.PI / (360));
                         }
@@ -285,7 +267,10 @@ public class App {
                     }
                 }
             });
-            panel.addKeyListener(new KeyAdapter() {
+        /*
+         * For changing the direction and speed of the Camera object
+         */
+        panel.addKeyListener(new KeyAdapter() {
                     @Override
                     public void keyPressed(KeyEvent e) {
                             double speed = 0.3;
@@ -313,7 +298,7 @@ public class App {
         camera = new Camera().
                 withAzimuth(Math.PI/4).
                 withZenith(-Math.PI/2).
-                withPosition(new Vec3D(2,0,13));
+                withPosition(new Vec3D(2,0,20));
         mousePosition = new Point2D((double) raster.getWidth() / 2, (double) raster.getHeight() / 2);
     }
 

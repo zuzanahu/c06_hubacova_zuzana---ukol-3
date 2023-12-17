@@ -55,6 +55,14 @@ public class Raster {
         g.drawImage(img, 0, 0, null);
     }
 
+    /**
+     * For drawing text onto the raster.
+     * @param text text to draw
+     * @param x x raster coordinate
+     * @param y y raster coordinate
+     * @param g graphics
+     */
+
     public void drawString(String text, double x, double y, Graphics g) {
         g.drawString(text,(int) x, (int) y);
     }

@@ -19,19 +19,23 @@ public abstract class Object3D {
         WHITE,
         GREEN,
         BLUE,
-        PURPLE
+        PURPLE,
+        ORANGE,
+        GRAY,
+        BEIGE
     };
     private final HashMap<Colors, Integer> colorsToValues = new HashMap<Colors, Integer>(
             Map.of(
                 Colors.PINK, 0xFFFF69B4,
-                Colors.LIGHT_BLUE, 0xFFADD8E6,
+                Colors.LIGHT_BLUE, 0xFFADE9E6,
                 Colors.BLACK, 0x00000000,
                 Colors.RED, 0x00ff0000,
                 Colors.YELLOW, 0xFFFFD700,
                 Colors.WHITE, 0xFFFFFFFF,
-                Colors.GREEN, 0x000000ff,
+                Colors.GREEN, 0x0000ff,
                 Colors.BLUE, 0x0000ff00,
-                Colors.PURPLE, 0xFF800080
+                Colors.PURPLE, 0xFF800080,
+                Colors.ORANGE, 0x00ff7415
             )
     );
 

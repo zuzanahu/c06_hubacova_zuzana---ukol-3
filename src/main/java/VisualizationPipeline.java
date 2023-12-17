@@ -40,6 +40,7 @@ public class VisualizationPipeline {
      */
     public void render(final Object3D object3D){
         Mat4 transformation;
+        // for rendering coordinate axes
         if (object3D instanceof Axes) {
             transformation = view.mul(proj);
             //multiply every vertex with the transformation matrix

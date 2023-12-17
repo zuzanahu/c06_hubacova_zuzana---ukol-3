@@ -4,7 +4,7 @@ import transforms.Mat4;
 import java.util.ArrayList;
 
 public class Scene {
-    private ArrayList<Object3D> object3DS;
+    private final ArrayList<Object3D> object3DS;
 
     public Scene() {
         this.object3DS = new ArrayList<>();
